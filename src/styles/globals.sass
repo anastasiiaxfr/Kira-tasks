@@ -1,0 +1,47 @@
+*
+    font-family: 'Roboto', sans-serif
+    box-sizing: border-box
+
+html, body, #root, .page
+    padding: 0
+    margin: 0
+    min-height: 100vh
+    display: flex
+    flex-direction: column
+
+    
+
+.btn
+    &_lg
+        height: 56px
+
+.form-divider
+    display: block
+    margin-bottom: 16px
+    margin-top: 16px
+    b
+        position: relative
+        display: flex
+        align-items: center
+        gap: 16px
+        width: 100%
+        &::before, &::after
+            content: ''
+            display: inline-flex
+            width: 100%
+            height: 1px
+            background: #000
+
+
+.page
+    &_auth
+        flex: 1
+        display: flex
+        flex-direction: column
+        justify-content: center
+
+.logo
+    text-decoration: none
+    font-size: 2em
+    font-weight: 800
+    color: inherit
