@@ -94,7 +94,7 @@ export const getDishById = async (id) => {
 export const getAllDishes = async () => {
   try {
     const response = await apiInstance.get("/dishes");
-    return response.data;
+    return response;
   } catch (error) {
     console.error("Error fetching all dishes:", error);
     throw error;
@@ -128,6 +128,16 @@ export const confirmOrder = async (id) => {
     return response.data;
   } catch (error) {
     console.error("Error confirming order:", error);
+    throw error;
+  }
+};
+
+export const cancelOrder = async (id) => {
+  try {
+    const response = await apiInstance.post(`/orders/${id}/cancel`);
+    return response.data;
+  } catch (error) {
+    console.error("Error canceling order:", error);
     throw error;
   }
 };

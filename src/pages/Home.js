@@ -1,6 +1,6 @@
 // pages/Home.js
 import React, { useState } from "react";
-import { Tabs, Tab, Paper, Box } from "@mui/material";
+import { Container, Tabs, Tab, Paper } from "@mui/material";
 import Register from "../components/RegisterForm"; // Register page
 import Login from "../components/LoginForm"; // Login page
 import TabPanel from "../components/TabPanel"; // TabPanel component
@@ -14,7 +14,7 @@ const Home = () => {
   };
 
   return (
-    <Box sx={{}}>
+    <Container maxWidth="sm" className="page_auth">
       <Link to="/" style={{ textDecoration: "none", color: "inherit", textAlign: "center" }}>
         <h2>Your.Logo</h2>
       </Link>
@@ -33,7 +33,7 @@ const Home = () => {
           <Login />
         </TabPanel>
       </Paper>
-    </Box>
+    </Container>
   );
 };
 
