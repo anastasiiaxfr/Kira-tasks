@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
-import { Container, Box } from "@mui/material";
+import NavBar from "./components/NavBar"; // Import NavBar
 
 import Home from "./pages/Home";
 import Register from "./pages/Register";
@@ -35,30 +35,29 @@ const App = () => {
   return (
     <AuthProvider>
       <Router>
-        <Container maxWidth="sm" className="page_auth">
-          <Routes>
-            <Route
-              path="/dishes"
-              element={
-                <PrivateRoute>
-                  <Dishes />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/orders"
-              element={
-                <PrivateRoute>
-                  <Orders />
-                </PrivateRoute>
-              }
-            />
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Container>
+        <NavBar /> {/* Render Navigation Bar */}
+        <Routes>
+          <Route
+            path="/dishes"
+            element={
+              <PrivateRoute>
+                <Dishes />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/orders"
+            element={
+              <PrivateRoute>
+                <Orders />
+              </PrivateRoute>
+            }
+          />
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
       </Router>
     </AuthProvider>
   );

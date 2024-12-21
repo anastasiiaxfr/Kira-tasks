@@ -60,7 +60,7 @@ const Register = () => {
         <InputLabel id="role-select-label">Role</InputLabel>
         <Select labelId="role-select-label" value={role} onChange={(e) => setRole(e.target.value)} label="Role">
           <MenuItem value="admin">Admin</MenuItem>
-          <MenuItem value="customer">Customer</MenuItem>
+          <MenuItem value="user">User</MenuItem>
         </Select>
       </FormControl>
 
