@@ -134,7 +134,7 @@ export const confirmOrder = async (id) => {
 
 export const cancelOrder = async (id) => {
   try {
-    const response = await apiInstance.post(`/orders/${id}/cancel`);
+    const response = await apiInstance.post(`/orders/${id}/close`);
     return response.data;
   } catch (error) {
     console.error("Error canceling order:", error);

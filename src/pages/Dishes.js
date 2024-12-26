@@ -23,7 +23,8 @@ const Dishes = () => {
   const [openEditModal, setOpenEditModal] = useState(false);
   const [currentDish, setCurrentDish] = useState(null);
   const [newDish, setNewDish] = useState({ name: "", price: "" });
-  const [orderQuantities, setOrderQuantities] = useState({}); // Change to an object to hold dish-specific quantities
+  const [orderQuantities, setOrderQuantities] = useState({});
+  const [cart, setCart] = useState([]); // Track selected dishes in cart
 
   useEffect(() => {
     const fetchDishes = async () => {
@@ -93,8 +94,32 @@ const Dishes = () => {
     }
   };
 
-  // Handle creating an order with specific quantity
-  const handleOrderDish = async (dishId) => {
+  // Handle adding dish to the cart
+  const handleAddToCart = (dishId) => {
+    const quantity = orderQuantities[dishId] || 1; // Get quantity for the specific dish
+    if (quantity > 0) {
+      const newCart = [...cart];
+      const dishInCart = newCart.find((item) => item.dishId === dishId);
+      if (dishInCart) {
+        // Update quantity if dish is already in the cart
+        dishInCart.quantity += quantity;
+      } else {
+        // Add new dish to cart
+        newCart.push({ dishId, quantity });
+      }
+      setCart(newCart); // Update cart
+      setOrderQuantities((prev) => ({ ...prev, [dishId]: 1 })); // Reset the quantity for that dish
+    }
+  };
+
+  // Handle removing dish from the cart
+  const handleRemoveFromCart = (dishId) => {
+    const newCart = cart.filter((item) => item.dishId !== dishId);
+    setCart(newCart);
+  };
+
+  // Handle confirming the order
+  const handleConfirmOrder = async () => {
     const storedUser = localStorage.getItem("user");
     if (!storedUser) {
       alert("User not found in localStorage");
@@ -109,38 +134,46 @@ const Dishes = () => {
       return;
     }
 
-    const quantity = orderQuantities[dishId] || 1; // Get quantity for specific dish, default to 1
-    const orderDetails = {
-      dish_id: dishId,
-      quantity: quantity,
+    // Create order data
+    const dishesData = cart.map((item) => ({
+      dish_id: item.dishId,
+      quantity: item.quantity,
+    }));
+
+    const orderData = {
+      customer_name: customerName,
+      dishes: dishesData,
     };
 
     try {
-      const orderData = {
-        customer_name: customerName,
-        dishes: [orderDetails],
-      };
       await createOrder(orderData);
       alert("Order placed successfully!");
-      setOrderQuantities((prev) => ({ ...prev, [dishId]: 1 })); // Reset quantity for this dish
+      setCart([]); // Clear cart after placing the order
     } catch (error) {
       console.error("Error creating order:", error);
       alert("Failed to place order");
     }
   };
 
-  const handleQuantityChange = (dishId, quantity) => {
-    setOrderQuantities((prev) => ({ ...prev, [dishId]: quantity }));
+  // Calculate total price of the cart
+  const calculateTotal = () => {
+    return cart.reduce((total, item) => {
+      const dish = dishes.find((d) => d._id === item.dishId);
+      return total + (dish ? dish.price * item.quantity : 0);
+    }, 0);
   };
 
   return (
     <Container maxWidth="xl">
       <h2>Dishes</h2>
+
+      {/* Admin specific functionality */}
       {user && user.role === "admin" && (
         <Button variant="contained" color="primary" onClick={handleOpenAddModal}>
           Add Dish
         </Button>
       )}
+
       <Grid container spacing={3} sx={{ marginTop: 2 }}>
         {dishes.map((dish) => (
           <Grid item xs={12} sm={6} md={4} key={dish._id}>
@@ -148,18 +181,25 @@ const Dishes = () => {
               <CardContent>
                 <Typography variant="h6">{dish.name}</Typography>
                 <Typography variant="body1">Price: ${dish.price}</Typography>
-                <Typography variant="body2" color="textSecondary">
-                  ID: {dish._id}
-                </Typography>
-
-                {user && user.role !== "admin" && (
-                  <Typography variant="body2" color="textSecondary">
-                    Customer ID: {user.id}
-                  </Typography>
-                )}
               </CardContent>
               <CardActions>
-                {user && user.role === "admin" ? (
+                {user && user.role !== "admin" && (
+                  <>
+                    <TextField
+                      label="Quantity"
+                      type="number"
+                      value={orderQuantities[dish._id] || 1}
+                      onChange={(e) => setOrderQuantities((prev) => ({ ...prev, [dish._id]: e.target.value }))}
+                      inputProps={{ min: 1 }}
+                    />
+                    <Button size="small" color="primary" onClick={() => handleAddToCart(dish._id)}>
+                      Add to Cart
+                    </Button>
+                  </>
+                )}
+
+                {/* Admin controls */}
+                {user && user.role === "admin" && (
                   <>
                     <Button size="small" color="primary" onClick={() => handleOpenEditModal(dish)}>
                       Edit
@@ -168,25 +208,46 @@ const Dishes = () => {
                       Delete
                     </Button>
                   </>
-                ) : (
-                  <>
-                    <TextField
-                      label="Quantity"
-                      type="number"
-                      value={orderQuantities[dish._id] || 1} // Use dish-specific quantity
-                      onChange={(e) => handleQuantityChange(dish._id, e.target.value)}
-                      inputProps={{ min: 1 }}
-                    />
-                    <Button size="small" color="primary" onClick={() => handleOrderDish(dish._id)}>
-                      Order
-                    </Button>
-                  </>
                 )}
               </CardActions>
             </Card>
           </Grid>
         ))}
       </Grid>
+
+      {/* Cart Summary */}
+      {cart.length > 0 && (
+        <div>
+          <h3>Your Cart</h3>
+          <Grid container spacing={2}>
+            {cart.map((item) => {
+              const dish = dishes.find((d) => d._id === item.dishId);
+              return (
+                <Grid item xs={12} sm={6} md={4} key={item.dishId}>
+                  <Card>
+                    <CardContent>
+                      <Typography variant="h6">{dish?.name}</Typography>
+                      <Typography variant="body2">Quantity: {item.quantity}</Typography>
+                      <Typography variant="body2">Price: ${dish?.price * item.quantity}</Typography>
+                    </CardContent>
+                    <CardActions>
+                      <Button size="small" color="error" onClick={() => handleRemoveFromCart(item.dishId)}>
+                        Remove
+                      </Button>
+                    </CardActions>
+                  </Card>
+                </Grid>
+              );
+            })}
+          </Grid>
+          <div>
+            <Typography variant="h6">Total: ${calculateTotal()}</Typography>
+            <Button variant="contained" color="primary" onClick={handleConfirmOrder}>
+              Confirm Order
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Add Dish Dialog */}
       <Dialog open={openAddModal} onClose={handleCloseAddModal}>

@@ -47,17 +47,20 @@ const Orders = () => {
 
         setOrders(ordersWithStatus);
 
-        // Fetch dish details for each order (optional)
-        const dishIds = allOrders.flatMap((order) => order.dishes.map((dish) => dish.dish_id));
-        const uniqueDishIds = [...new Set(dishIds)];
+       
 
-        const dishData = {};
-        for (let dishId of uniqueDishIds) {
-          const dishDetails = await getDishById(dishId); // Assuming this API call exists to fetch dish details
-          dishData[dishId] = dishDetails;
-        }
 
-        setDishes(dishData);
+      // Fetch dish details for each order (optional)
+      const dishIds = allOrders.flatMap((order) => order.dishes.map((dish) => dish.dish_id));
+      const uniqueDishIds = [...new Set(dishIds)];
+      const dishData = {};
+      for (let dishId of uniqueDishIds) {
+        const dishDetails = await getDishById(dishId); // Assuming this API call exists to fetch dish details
+        dishData[dishId] = dishDetails;
+      }
+      setDishes(dishData);
+
+
       } catch (error) {
         console.error("Error fetching orders or dish data:", error);
       }
@@ -130,7 +133,7 @@ const Orders = () => {
                 transition: "background-color 0.3s ease",
               }}
             >
-              <CardContent>
+              <CardContent style={{position: 'relative'}}>
                 <Typography variant="h6">Order ID: {order._id}</Typography>
                 <Typography variant="body1">Customer: {order.customer_name}</Typography>
                 <Typography variant="body2">
@@ -138,8 +141,8 @@ const Orders = () => {
                   <Stack direction="row" spacing={1}>
                     {order.dishes.map((dish, index) => (
                       <span key={index}>
-                        {dishes[dish.dish_id] ? (
-                          <Chip label={`${dishes[dish.dish_id].name} (x${dish.quantity})`} />
+                        {dish.dish_id ? (
+                          <Chip label={`${dish.dish_id} (x${dish.quantity})`} />
                         ) : null}
                       </span>
                     ))}
@@ -148,11 +151,11 @@ const Orders = () => {
 
                 <Typography variant="body2">Status: {order.status ? order.status : "Pending"}</Typography>
 
-                <Badge
+                {/* <Badge
                   color={order.status === "approved" ? "success" : order.status === "canceled" ? "error" : "default"}
                   badgeContent={order.status ? order.status : "Pending"}
                   sx={{ position: "absolute", top: 16, right: 16 }}
-                />
+                /> */}
               </CardContent>
 
               <CardActions>
