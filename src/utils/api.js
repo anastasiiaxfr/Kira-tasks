@@ -161,3 +161,13 @@ export const getAllOrders = async () => {
     throw error;
   }
 };
+
+export const getAllOrdersByUser = async (id) => {
+  try {
+    const response = await apiInstance.get(`/orders/user/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching all orders:", error);
+    throw error;
+  }
+};
