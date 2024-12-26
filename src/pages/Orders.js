@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Container, Button, Card, CardActions, CardContent, Grid, Typography, Badge, Chip, Stack } from "@mui/material";
+import { Container, Button, Card, CardActions, CardContent, Grid, Typography, Stack, Chip } from "@mui/material";
 import { getAllOrders, getAllOrdersByUser, deleteOrder, confirmOrder, cancelOrder, getDishById } from "../utils/api";
 
 const Orders = () => {
@@ -23,7 +23,7 @@ const Orders = () => {
 
         // Fetch orders based on the role
         if (role === "user") {
-          console.log("user");
+          console.log("Fetching orders for user");
           const userData = JSON.parse(localStorage.getItem("user"));
           const userId = userData?.id;
 
@@ -47,20 +47,15 @@ const Orders = () => {
 
         setOrders(ordersWithStatus);
 
-       
-
-
-      // Fetch dish details for each order (optional)
-      const dishIds = allOrders.flatMap((order) => order.dishes.map((dish) => dish.dish_id));
-      const uniqueDishIds = [...new Set(dishIds)];
-      const dishData = {};
-      for (let dishId of uniqueDishIds) {
-        const dishDetails = await getDishById(dishId); // Assuming this API call exists to fetch dish details
-        dishData[dishId] = dishDetails;
-      }
-      setDishes(dishData);
-
-
+        // Fetch dish details for each order (optional)
+        const dishIds = allOrders.flatMap((order) => order.dishes.map((dish) => dish.dish_id));
+        const uniqueDishIds = [...new Set(dishIds)];
+        const dishData = {};
+        for (let dishId of uniqueDishIds) {
+          const dishDetails = await getDishById(dishId); // Assuming this API call exists to fetch dish details
+          dishData[dishId] = dishDetails;
+        }
+        setDishes(dishData);
       } catch (error) {
         console.error("Error fetching orders or dish data:", error);
       }
@@ -124,16 +119,14 @@ const Orders = () => {
             <Card
               sx={{
                 backgroundColor:
-                  order.status === "confirmed" || order.status === "approved"
-                    ? "lightgreen"
-                    : order.status === "canceled"
-                    ? "lightcoral"
-                    : "white",
-                color: order.status === "approved" || order.status === "canceled" ? "black" : "black",
+                  order.status === "approved" || order.status === "confirmed" ? "lightgreen" :
+                  order.status === "closed" || order.status === "canceled" ? "lightcoral" :
+                  "white",
+                color: order.status === "approved" || order.status === "confirmed" ? "black" : "black",
                 transition: "background-color 0.3s ease",
               }}
             >
-              <CardContent style={{position: 'relative'}}>
+              <CardContent style={{ position: 'relative' }}>
                 <Typography variant="h6">Order ID: {order._id}</Typography>
                 <Typography variant="body1">Customer: {order.customer_name}</Typography>
                 <Typography variant="body2">
@@ -150,33 +143,32 @@ const Orders = () => {
                 </Typography>
 
                 <Typography variant="body2">Status: {order.status ? order.status : "Pending"}</Typography>
-
-                {/* <Badge
-                  color={order.status === "approved" ? "success" : order.status === "canceled" ? "error" : "default"}
-                  badgeContent={order.status ? order.status : "Pending"}
-                  sx={{ position: "absolute", top: 16, right: 16 }}
-                /> */}
               </CardContent>
 
               <CardActions>
                 {role === "user" && (
                   <>
-                    <Button
-                      size="small"
-                      color="success"
-                      disabled={order.status === "approved" || order.status === "canceled"}
-                      onClick={() => handleApprove(order._id)}
-                    >
-                      Approve
-                    </Button>
-                    <Button
-                      size="small"
-                      color="error"
-                      disabled={order.status === "approved" || order.status === "canceled"}
-                      onClick={() => handleCancel(order._id)}
-                    >
-                      Cancel
-                    </Button>
+                    {/* Only allow user to approve or cancel their own orders */}
+                    {order.customer_id === JSON.parse(localStorage.getItem("user")).id && (
+                      <>
+                        <Button
+                          size="small"
+                          color="success"
+                          disabled={order.status === "approved" || order.status === "canceled"}
+                          onClick={() => handleApprove(order._id)}
+                        >
+                          Approve
+                        </Button>
+                        <Button
+                          size="small"
+                          color="error"
+                          disabled={order.status === "approved" || order.status === "canceled"}
+                          onClick={() => handleCancel(order._id)}
+                        >
+                          Cancel
+                        </Button>
+                      </>
+                    )}
                   </>
                 )}
 
